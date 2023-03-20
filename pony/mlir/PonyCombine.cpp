@@ -59,7 +59,7 @@ struct SimplifyRedundantTranspose : public mlir::OpRewritePattern<TransposeOp> {
     // step 3: Otherwise, we have a redundant transpose. Use the rewriter to remove redundancy.
     // Hint: For mlir::PatternRewriter, there is a function you may use to remove redundancy: 
     //       void replaceOp (mlir::Operation *op, mlir::ValueRange newValues)
-    //       Operations of the second argument will be replaced by the first argument.
+    //       The first argument will be replaced by the second argument.
 
     /* 
      *
