@@ -177,6 +177,7 @@ int loadAndProcessMLIR(mlir::MLIRContext &context,
 }
 // TODO:补充“词法分析器正确性”验证程序int dumpToken()
 int dumpToken() {
+  
   if (inputType == InputType::MLIR) {
     llvm::errs() << "Can't dump Pony Tokens when the input is MLIR\n";
     return 5;
@@ -192,14 +193,33 @@ int dumpToken() {
   LexerBuffer lexer(buffer.begin(), buffer.end(), std::string(inputFilename));
 
   lexer.getNextToken(); // prime the lexer
+  //将lexer.curtok()初始化为第一个token
 
   // TODO: 使用lexer遍历整个文档，最终按顺序输出识别到的每一种Token
   //       具体输出格式可参考大作业文档中给出的示例。
-  /* 
-    *
-    *  Write your code here.
-    *
-    */
+
+    auto token_now = lexer.getCurToken();
+    while(token_now != -1){
+        if(token_now == tok_semicolon) std::cout<<';'<<" ";
+        else if(token_now == tok_parenthese_open) std::cout<<'('<<" ";
+        else if(token_now == tok_parenthese_close) std::cout<<')'<<" ";
+        else if(token_now == tok_bracket_open) std::cout<<'{'<<" ";
+        else if(token_now == tok_bracket_close) std::cout<<'}'<<" ";
+        else if(token_now == tok_sbracket_open) std::cout<<'['<<" ";
+        else if(token_now == tok_sbracket_close) std::cout<<']'<<" ";
+        else if(token_now == -5) std::cout<<lexer.getId()<<" ";
+        else if(token_now == -6) std::cout<<lexer.getValue()<<" ";
+        //else if(token_now == -1) std::cout<<"eof"<<" ";
+        else if(token_now == -2) std::cout<<"return"<<" ";
+        else if(token_now == -3) std::cout<<"var"<<" ";
+        else if(token_now == -4) std::cout<<"def"<<" ";
+        else{
+          std::cout<<"error"<<" ";
+        }
+        lexer.getNextToken();
+        token_now = lexer.getCurToken();
+    }
+    std::cout<<"eof"<<std::endl;
   return 0;
 }
 

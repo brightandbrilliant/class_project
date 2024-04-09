@@ -11,6 +11,8 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <regex> //I add this header to construct the regex and match the string
+
 
 namespace pony {
 
@@ -107,12 +109,35 @@ private:
   //        3. 注意行列位置信息的同步更新；
   //        4. 关于llvm::StringRef的部分函数：llvm::StringRef example; example.front(); example.drop_front(); example.empty()。
   int getNextChar() {
-    /* 
-     *
-     *  Write your code here.
-     *
-     */
+      if(curLineBuffer.empty()) return EOF;//当前行为空，已经读到文档结尾，返回EOF
+
+      char result = curLineBuffer.front();
+      curLineBuffer.drop_front(1);
+      curCol++;
+      if(result == '\n'){
+          curLineBuffer.readNextLine();
+          curCol = 0;
+          curLineNum++;
+      }//当前字符为'\n'，为本行的结束
+      return result;
   }
+
+  int getNextChar()
+    {
+      if (curLineBuffer.empty())
+        return EOF;
+
+      char nextchar = curLineBuffer.front();
+      curLineBuffer.drop_front(1);
+      curCol++;
+      if (nextchar == '\n')
+      {
+        curLineBuffer = readNextLine();
+        curLineNum++;
+        curCol = 0;
+      }
+      return nextchar;
+    }
 
   ///  Return the next token from standard input.
   Token getTok() {
@@ -136,11 +161,29 @@ private:
     //
     // Hints: 1. 在实现第1，2点时，可参考getTok()函数中现有的识别数字的方法。
     //        2. 一些有用的函数:  isalpha(); isalnum();
-    /* 
-     *
-     *  Write your code here.
-     *
-     */
+
+      if(isalpha(lastChar)){
+          std::string id_now;
+          regex id_token("^([a-zA-Z]_{0,1})+[0-9]*$");
+          do{
+            id_now += lastChar;
+            lastChar = Token(getNextChar());
+          }while(isalnum(lastChar)||lastChar=='_');
+
+          if(id_now == "return") return tok_return;
+          if(id_now == "def") return tok_def;
+          if(id_now == "var") return tok_var;
+          if(regex_match(id_now,id_token)){
+            identifierStr = id_now;
+            return tok_identifier;
+          }
+
+          if(!regex_match(id_now,id_token)){
+             std::cout<<"Not an id"<<std::endl;
+             return Token(lastChar);
+          }
+      }
+
 
     //TODO: 3. 改进识别数字的方法，使编译器可以识别并在终端报告非法数字，非法表示包括：9.9.9，9..9，.999，..9，9..等。
     if (isdigit(lastChar) || lastChar == '.') {
@@ -150,8 +193,17 @@ private:
         lastChar = Token(getNextChar());
       } while (isdigit(lastChar) || lastChar == '.');
 
-      numVal = strtod(numStr.c_str(), nullptr);
-      return tok_number;
+      std::string id = R"(^(\+|-){0,1}(0|[1-9][0-9]*)(\.[0-9]+){0,1}$)";
+      std::regex number_token(id);
+
+      if(regex_match(numStr,number_token)){
+        numVal = strtod(numStr.c_str(), nullptr);
+        return tok_number;
+      }
+      else{
+        std::cout<<"This is not a legel number"<<std::endl;
+        return Token(lastChar);
+      }
     }
 
     if (lastChar == '#') {
