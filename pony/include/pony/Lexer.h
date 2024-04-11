@@ -34,13 +34,14 @@ enum Token : int {
   tok_sbracket_close = ']',
 
   tok_eof = -1,
-
   tok_return = -2,
   tok_var = -3,
   tok_def = -4,
-
   tok_identifier = -5,
   tok_number = -6,
+  tok_marks = -7,//增加了一个表示标点符号
+  error_tok_id=-8,
+  error_tok_num=-9
 };
 
 /// The Lexer is an abstract base class providing all the facilities that the
@@ -75,6 +76,11 @@ public:
   llvm::StringRef getId() {
     assert(curTok == tok_identifier);
     return identifierStr;
+  }
+
+  llvm::StringRef getMarks() {
+    assert(curTok == tok_marks);
+    return marks;
   }
 
   double getValue() {
@@ -112,32 +118,29 @@ private:
       if(curLineBuffer.empty()) return EOF;//当前行为空，已经读到文档结尾，返回EOF
 
       char result = curLineBuffer.front();
-      curLineBuffer.drop_front(1);
+      curLineBuffer = curLineBuffer.drop_front(1);
       curCol++;
       if(result == '\n'){
-          curLineBuffer.readNextLine();
+          curLineBuffer=readNextLine();
           curCol = 0;
           curLineNum++;
       }//当前字符为'\n'，为本行的结束
       return result;
   }
 
-  int getNextChar()
-    {
-      if (curLineBuffer.empty())
-        return EOF;
-
-      char nextchar = curLineBuffer.front();
-      curLineBuffer.drop_front(1);
-      curCol++;
-      if (nextchar == '\n')
-      {
-        curLineBuffer = readNextLine();
-        curLineNum++;
-        curCol = 0;
+  int check_id(std::string str){
+      if(isdigit(str[0]))
+        return 1;//数字开头
+      for(int i=1;i<str.length()-1;i++){
+          if(isdigit(str[i]) && (isalpha(str[i+1])||str[i+1]=='_'))
+          return 2;
+      }//数字出现在中间
+      for(int i=0;i<str.length()-1;i++){
+          if(str[i]=='_' && str[i]=='_')
+          return 3;//连续下划线
       }
-      return nextchar;
-    }
+      return 0;
+  }
 
   ///  Return the next token from standard input.
   Token getTok() {
@@ -164,7 +167,7 @@ private:
 
       if(isalpha(lastChar)){
           std::string id_now;
-          regex id_token("^([a-zA-Z]_{0,1})+[0-9]*$");
+          std::regex id_token("^([a-zA-Z]_{0,1})+[0-9]*$");
           do{
             id_now += lastChar;
             lastChar = Token(getNextChar());
@@ -179,14 +182,26 @@ private:
           }
 
           if(!regex_match(id_now,id_token)){
-             std::cout<<"Not an id"<<std::endl;
-             return Token(lastChar);
+             std::cout<<"Identifier <"<<id_now<<"> ";
+             if(check_id(id_now) == 1){
+                std::cout<<"begins with digit"<<std::endl;
+             }
+             else if(check_id(id_now) == 2){
+                std::cout<<"has digit in the middle"<<std::endl;
+             }
+             else if(check_id(id_now) == 3){
+                std::cout<<"contains continuous _"<<std::endl;
+             }
+             else{
+                std::cout<<"error"<<std::endl;
+             }
+             return error_tok_id;
           }
       }
 
 
     //TODO: 3. 改进识别数字的方法，使编译器可以识别并在终端报告非法数字，非法表示包括：9.9.9，9..9，.999，..9，9..等。
-    if (isdigit(lastChar) || lastChar == '.') {
+    if (isdigit(lastChar)||lastChar == '.') {
       std::string numStr;
       do {
         numStr += lastChar;
@@ -201,9 +216,19 @@ private:
         return tok_number;
       }
       else{
-        std::cout<<"This is not a legel number"<<std::endl;
-        return Token(lastChar);
+        std::cout<<"Invalid number: <"<<numStr<<">"<<std::endl;
+        return error_tok_num;
       }
+    }
+
+    //增加了一个判断符号的函数
+    if(lastChar==','||lastChar=='-'||lastChar=='+'
+    ||lastChar=='*'||lastChar=='/'||lastChar=='='||lastChar=='<'||lastChar=='>'){
+      std::string result;
+      result += lastChar;
+      marks = result;
+      lastChar = Token(getNextChar());
+      return tok_marks;
     }
 
     if (lastChar == '#') {
@@ -234,7 +259,7 @@ private:
 
   /// If the current Token is an identifier, this string contains the value.
   std::string identifierStr;
-
+  std::string marks;//增加了这个
   /// If the current Token is a number, this contains the value.
   double numVal = 0;
 

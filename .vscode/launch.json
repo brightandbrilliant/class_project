@@ -6,7 +6,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/bin/pony",
-            "args": ["${workspaceFolder}/test/test_1.pony", "-emit=token"],
+            "args": ["${workspaceFolder}/test/test_4.pony", "-emit=token"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

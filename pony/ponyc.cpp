@@ -198,28 +198,40 @@ int dumpToken() {
   // TODO: 使用lexer遍历整个文档，最终按顺序输出识别到的每一种Token
   //       具体输出格式可参考大作业文档中给出的示例。
 
+    std::string buffer_tmp = "";
     auto token_now = lexer.getCurToken();
     while(token_now != -1){
-        if(token_now == tok_semicolon) std::cout<<';'<<" ";
-        else if(token_now == tok_parenthese_open) std::cout<<'('<<" ";
-        else if(token_now == tok_parenthese_close) std::cout<<')'<<" ";
-        else if(token_now == tok_bracket_open) std::cout<<'{'<<" ";
-        else if(token_now == tok_bracket_close) std::cout<<'}'<<" ";
-        else if(token_now == tok_sbracket_open) std::cout<<'['<<" ";
-        else if(token_now == tok_sbracket_close) std::cout<<']'<<" ";
-        else if(token_now == -5) std::cout<<lexer.getId()<<" ";
-        else if(token_now == -6) std::cout<<lexer.getValue()<<" ";
-        //else if(token_now == -1) std::cout<<"eof"<<" ";
-        else if(token_now == -2) std::cout<<"return"<<" ";
-        else if(token_now == -3) std::cout<<"var"<<" ";
-        else if(token_now == -4) std::cout<<"def"<<" ";
-        else{
-          std::cout<<"error"<<" ";
+        if(token_now == tok_semicolon) buffer_tmp+="; ";
+        else if(token_now == tok_parenthese_open) buffer_tmp+="( ";
+        else if(token_now == tok_parenthese_close) buffer_tmp+=") ";
+        else if(token_now == tok_bracket_open) buffer_tmp+="{ ";
+        else if(token_now == tok_bracket_close) buffer_tmp+="} ";
+        else if(token_now == tok_sbracket_open) buffer_tmp+="[ ";
+        else if(token_now == tok_sbracket_close) buffer_tmp+="] ";
+        else if(token_now == -5) {buffer_tmp+=lexer.getId();buffer_tmp+=' ';}
+        else if(token_now == -7) {buffer_tmp+=lexer.getMarks();buffer_tmp+=' ';}
+        else if(token_now == -6){
+          double tmp = lexer.getValue();
+          if(tmp == (int)tmp){
+            int tmp1 = (int) tmp;
+            buffer_tmp += std::to_string(tmp1);
+            buffer_tmp += ' ';
+          }
+          else{
+            buffer_tmp += std::to_string(tmp);
+            buffer_tmp += ' ';
+          }
         }
+        else if(token_now == -2) buffer_tmp += "return ";
+        else if(token_now == -3) buffer_tmp += "var ";
+        else if(token_now == -4) buffer_tmp += "return ";
+        else if(token_now == -1) buffer_tmp += "eof";
+        else if(token_now == -8) buffer_tmp += "ERROR_IDENTIFIER ";
+        else if(token_now == -9) buffer_tmp += "ERROR_NUMBER ";
         lexer.getNextToken();
         token_now = lexer.getCurToken();
     }
-    std::cout<<"eof"<<std::endl;
+    std::cout<<buffer_tmp<<std::endl;
   return 0;
 }
 
