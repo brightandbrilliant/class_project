@@ -39,7 +39,7 @@ enum Token : int {
   tok_def = -4,
   tok_identifier = -5,
   tok_number = -6,
-  tok_marks = -7,//增加了一个表示标点符号
+  //tok_marks = -7,//增加了一个表示标点符号
   error_tok_id=-8,
   error_tok_num=-9
 };
@@ -78,10 +78,10 @@ public:
     return identifierStr;
   }
 
-  llvm::StringRef getMarks() {
+  /*llvm::StringRef getMarks() {
     assert(curTok == tok_marks);
     return marks;
-  }
+  }*/
 
   double getValue() {
 
@@ -222,14 +222,14 @@ private:
     }
 
     //增加了一个判断符号的函数
-    if(lastChar==','||lastChar=='-'||lastChar=='+'
+    /*if(lastChar==','||lastChar=='-'||lastChar=='+'
     ||lastChar=='*'||lastChar=='/'||lastChar=='='||lastChar=='<'||lastChar=='>'){
       std::string result;
       result += lastChar;
       marks = result;
       lastChar = Token(getNextChar());
       return tok_marks;
-    }
+    }*/
 
     if (lastChar == '#') {
       // Comment until end of line.
@@ -259,7 +259,7 @@ private:
 
   /// If the current Token is an identifier, this string contains the value.
   std::string identifierStr;
-  std::string marks;//增加了这个
+  //std::string marks;//增加了这个
   /// If the current Token is a number, this contains the value.
   double numVal = 0;
 

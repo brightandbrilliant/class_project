@@ -209,7 +209,7 @@ int dumpToken() {
         else if(token_now == tok_sbracket_open) buffer_tmp+="[ ";
         else if(token_now == tok_sbracket_close) buffer_tmp+="] ";
         else if(token_now == -5) {buffer_tmp+=lexer.getId();buffer_tmp+=' ';}
-        else if(token_now == -7) {buffer_tmp+=lexer.getMarks();buffer_tmp+=' ';}
+        //else if(token_now == -7) {buffer_tmp+=lexer.getMarks();buffer_tmp+=' ';}
         else if(token_now == -6){
           double tmp = lexer.getValue();
           if(tmp == (int)tmp){
@@ -228,6 +228,7 @@ int dumpToken() {
         else if(token_now == -1) buffer_tmp += "eof";
         else if(token_now == -8) buffer_tmp += "ERROR_IDENTIFIER ";
         else if(token_now == -9) buffer_tmp += "ERROR_NUMBER ";
+        else {buffer_tmp += token_now;buffer_tmp+=" ";}
         lexer.getNextToken();
         token_now = lexer.getCurToken();
     }
