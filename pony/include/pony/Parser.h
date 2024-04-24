@@ -182,8 +182,9 @@ private:
     auto loc = lexer.getLastLocation();
     std::string id;
 
-    // Here we provide implementation hints for the first two methods of initialization
-    // Note that you need to consider a new method that implements all three types of initialization
+    
+    // ******* TODO: Here we provide implementation hints for the first two methods of initialization *******
+    // ******* Note that you need to consider a new method that implements all three types of initialization *******
 
     // TODO: check to see if this is a 'var' declaration 
     //       If not, report the error with 'parseError', otherwise eat 'var'  
