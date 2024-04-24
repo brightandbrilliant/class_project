@@ -181,6 +181,10 @@ private:
   std::unique_ptr<VarDeclExprAST> parseDeclaration() {
     auto loc = lexer.getLastLocation();
     std::string id;
+
+    // Here we provide implementation hints for the first two methods of initialization
+    // Note that you need to consider a new method that implements all three types of initialization
+
     // TODO: check to see if this is a 'var' declaration 
     //       If not, report the error with 'parseError', otherwise eat 'var'  
     /* 
@@ -198,7 +202,6 @@ private:
      */
 
     std::unique_ptr<VarType> type; // Type is optional, it can be inferred
-    // TODO: modify the code to additionally support the third method: var<2,3> a = ... 
     if (lexer.getCurToken() == '<') {
       type = parseType();
       if (!type)
@@ -215,7 +218,6 @@ private:
 
   /// type ::= < shape_list >
   /// shape_list ::= num | num , shape_list
-  // TODO: make an extension to support the new type like var a[2][3] = [1, 2, 3, 4, 5, 6];
   std::unique_ptr<VarType> parseType() {
     if (lexer.getCurToken() != '<')
       return parseError<VarType>("<", "to begin type");
