@@ -128,16 +128,29 @@ private:
       return result;
   }
 
-  int check_id(std::string str){
-      if(isdigit(str[0]))
-        return 1;//数字开头
-      for(int i=1;i<str.length()-1;i++){
-          if(isdigit(str[i]) && (isalpha(str[i+1])||str[i+1]=='_'))
-          return 2;
-      }//数字出现在中间
-      for(int i=0;i<str.length()-1;i++){
-          if(str[i]=='_' && str[i]=='_')
-          return 3;//连续下划线
+  int check_id_number(std::string str){
+      bool numberflag = 1;
+      for(int i=0;i<str.length();i++){
+        if(!isdigit(str[i])&&str[i]!='.')
+        {numberflag=0;break;}
+      }
+
+      if(!numberflag){
+        if(isdigit(str[0]))
+          return 1;//数字开头
+        for(int i=1;i<str.length()-1;i++){
+            if(isdigit(str[i]) && (isalpha(str[i+1])||str[i+1]=='_'))
+            return 2;
+        }//数字出现在中间
+        for(int i=0;i<str.length()-1;i++){
+            if(str[i]=='_' && str[i+1]=='_')
+            return 3;//连续下划线
+        }
+        if(str[0]=='_')
+          return 5;//下划线开头
+      }
+      else{
+          return 4;
       }
       return 0;
   }
@@ -165,71 +178,65 @@ private:
     // Hints: 1. 在实现第1，2点时，可参考getTok()函数中现有的识别数字的方法。
     //        2. 一些有用的函数:  isalpha(); isalnum();
 
-      if(isalpha(lastChar)){
+      if(isalnum(lastChar)||lastChar=='_'||lastChar=='.'){
           std::string id_now;
           std::regex id_token("^([a-zA-Z]_{0,1})+[0-9]*$");
+          std::string number1 = R"(^(\+|-){0,1}(0|[1-9][0-9]*)(\.[0-9]+){0,1}$)";
+          std::regex number_token(number1);
+
           do{
             id_now += lastChar;
             lastChar = Token(getNextChar());
-          }while(isalnum(lastChar)||lastChar=='_');
+          }while(isalnum(lastChar)||lastChar=='_'||lastChar=='.');
 
           if(id_now == "return") return tok_return;
           if(id_now == "def") return tok_def;
           if(id_now == "var") return tok_var;
+          
+          if(regex_match(id_now,number_token)){
+            numVal = strtod(id_now.c_str(), nullptr);
+            return tok_number;
+          }
           if(regex_match(id_now,id_token)){
             identifierStr = id_now;
             return tok_identifier;
           }
 
-          if(!regex_match(id_now,id_token)){
-             std::cout<<"Identifier <"<<id_now<<"> ";
-             if(check_id(id_now) == 1){
+          if(!regex_match(id_now,id_token)&&!regex_match(id_now,number_token)){
+             if(check_id_number(id_now) == 1){
+                std::cout<<"Identifier <"<<id_now<<"> ";
                 std::cout<<"begins with digit"<<std::endl;
+                return error_tok_id;
              }
-             else if(check_id(id_now) == 2){
+             else if(check_id_number(id_now) == 2){
+                std::cout<<"Identifier <"<<id_now<<"> ";
                 std::cout<<"has digit in the middle"<<std::endl;
+                return error_tok_id;
              }
-             else if(check_id(id_now) == 3){
+             else if(check_id_number(id_now) == 3){
+                std::cout<<"Identifier <"<<id_now<<"> ";
                 std::cout<<"contains continuous _"<<std::endl;
+                return error_tok_id;
+             }
+             else if(check_id_number(id_now) == 5){
+                std::cout<<"Identifier <"<<id_now<<"> ";
+                std::cout<<"begins with _"<<std::endl;
+                return error_tok_id;
+             }
+             else if(check_id_number(id_now) == 4){
+                std::cout<<"Invalid number: <"<<id_now<<">"<<std::endl;
+                return error_tok_num;
              }
              else{
-                std::cout<<"error"<<std::endl;
+                std::cout<<"Unknown error."<<std::endl;
              }
-             return error_tok_id;
+             
           }
       }
+      
 
+        
 
-    //TODO: 3. 改进识别数字的方法，使编译器可以识别并在终端报告非法数字，非法表示包括：9.9.9，9..9，.999，..9，9..等。
-    if (isdigit(lastChar)||lastChar == '.') {
-      std::string numStr;
-      do {
-        numStr += lastChar;
-        lastChar = Token(getNextChar());
-      } while (isdigit(lastChar) || lastChar == '.');
-
-      std::string id = R"(^(\+|-){0,1}(0|[1-9][0-9]*)(\.[0-9]+){0,1}$)";
-      std::regex number_token(id);
-
-      if(regex_match(numStr,number_token)){
-        numVal = strtod(numStr.c_str(), nullptr);
-        return tok_number;
-      }
-      else{
-        std::cout<<"Invalid number: <"<<numStr<<">"<<std::endl;
-        return error_tok_num;
-      }
-    }
-
-    //增加了一个判断符号的函数
-    /*if(lastChar==','||lastChar=='-'||lastChar=='+'
-    ||lastChar=='*'||lastChar=='/'||lastChar=='='||lastChar=='<'||lastChar=='>'){
-      std::string result;
-      result += lastChar;
-      marks = result;
-      lastChar = Token(getNextChar());
-      return tok_marks;
-    }*/
 
     if (lastChar == '#') {
       // Comment until end of line.

@@ -224,7 +224,7 @@ int dumpToken() {
         }
         else if(token_now == -2) buffer_tmp += "return ";
         else if(token_now == -3) buffer_tmp += "var ";
-        else if(token_now == -4) buffer_tmp += "return ";
+        else if(token_now == -4) buffer_tmp += "def ";
         else if(token_now == -1) buffer_tmp += "eof";
         else if(token_now == -8) buffer_tmp += "ERROR_IDENTIFIER ";
         else if(token_now == -9) buffer_tmp += "ERROR_NUMBER ";
