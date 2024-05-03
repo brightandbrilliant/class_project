@@ -176,11 +176,16 @@ private:
   //    (1) var a = [[1, 2, 3], [4, 5, 6]];
   //    (2) var a <2,3> = [1, 2, 3, 4, 5, 6];
   // You need to support the third method:
-  //    (3) var a [2][3] = [1, 2, 3, 4, 5, 6];
+  //    (3) var<2,3> a = [1, 2, 3, 4, 5, 6] 
   // Some functions may be useful:  getLastLocation(); getNextToken();
   std::unique_ptr<VarDeclExprAST> parseDeclaration() {
     auto loc = lexer.getLastLocation();
     std::string id;
+
+    
+    // ******* TODO: Here we provide implementation hints for the first two methods of initialization *******
+    // ******* Note that you need to consider a new method that implements all three types of initialization *******
+
     // TODO: check to see if this is a 'var' declaration 
     //       If not, report the error with 'parseError', otherwise eat 'var'  
     /* 
@@ -198,7 +203,6 @@ private:
      */
 
     std::unique_ptr<VarType> type; // Type is optional, it can be inferred
-    // TODO: modify the code to additionally support the third method: var a[][] = ... 
     if (lexer.getCurToken() == '<') {
       type = parseType();
       if (!type)
@@ -215,7 +219,6 @@ private:
 
   /// type ::= < shape_list >
   /// shape_list ::= num | num , shape_list
-  // TODO: make an extension to support the new type like var a[2][3] = [1, 2, 3, 4, 5, 6];
   std::unique_ptr<VarType> parseType() {
     if (lexer.getCurToken() != '<')
       return parseError<VarType>("<", "to begin type");
@@ -404,6 +407,7 @@ private:
   }
 
   // Get the precedence of the pending binary operator token.
+  // TODO: 增加矩阵乘法@的支持，其优先级与矩阵点乘*相同：
   int getTokPrecedence() {
     if (!isascii(lexer.getCurToken()))
       return -1;
@@ -422,7 +426,7 @@ private:
     }
   }
 
-  // TODO: Recursively parse the right hand side of a binary expression, 
+  // TODO 1）: Recursively parse the right hand side of a binary expression, 
   //       for example, it could be something like  '+' primary '-' primary  or  ('+' primary)* .
   //       The first argument (exprPrec) indicates the precedence of the current binary operator. 
   //       The second argument (lhs) indicates the left hand side of the expression.
@@ -430,6 +434,7 @@ private:
   //        2. You may use some funtions in the lexer to get current and next tokens;
   //        3. You may use some functions to help you parse: getTokPrecedence(); parsePrimary(); parseError<ExprAST>();
   //        4. During each iteration, the lhs may be merged with rhs and becomes a larger lhs. Function you may use: std::make_unique<BinaryExprAST>(...).
+  // TODO 2）: 增加矩阵乘法@的支持，其优先级与矩阵点乘*相同：
   std::unique_ptr<ExprAST> parseBinOpRHS(int exprPrec,
                                          std::unique_ptr<ExprAST> lhs) {
     /* 

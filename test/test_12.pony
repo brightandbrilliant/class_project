@@ -1,5 +1,6 @@
 # ../build/bin/pony ../test/test_12.pony -emit=ast
 # ../build/bin/pony ../test/test_12.pony -emit=jit
+
 def multiply_transpose(a, b) {
   return transpose(a) * transpose(b);
 }
