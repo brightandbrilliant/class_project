@@ -248,6 +248,27 @@ def MulOp : Pony_Op<"mul",
 }
 
 //===----------------------------------------------------------------------===//
+// GemmOp
+//===----------------------------------------------------------------------===//
+
+def GemmOp : Pony_Op<"gemm",
+    [NoSideEffect, DeclareOpInterfaceMethods<ShapeInferenceOpInterface>]> {
+  let summary = "GEMM";
+  let description = [{
+    General matrix multiply.
+  }];
+
+  let arguments = (ins F64Tensor:$lhs, F64Tensor:$rhs);
+  let results = (outs F64Tensor);
+
+  let hasCustomAssemblyFormat = 1;
+
+  let builders = [
+    OpBuilder<(ins "Value":$lhs, "Value":$rhs)>
+  ];
+}
+
+//===----------------------------------------------------------------------===//
 // PrintOp
 //===----------------------------------------------------------------------===//
 
