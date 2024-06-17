@@ -37,11 +37,7 @@ struct SimplifyRedundantTranspose : public mlir::OpRewritePattern<TransposeOp> {
     // Step 1: Get the input of the current transpose.
     // Hint: For op, there is a function: op.getOperand(), it returns the parameter of a TransposeOp and its type is mlir::Value.
 
-    /* 
-     *
-     *  Write your code here.
-     *
-     */
+    Value value_input = op.getOperand();
 
 
     // Step 2: Check whether the input is defined by another transpose. If not defined, return failure().
@@ -49,23 +45,16 @@ struct SimplifyRedundantTranspose : public mlir::OpRewritePattern<TransposeOp> {
     //       template<typename OpTy> OpTy getDefiningOp () const
  	  //       If this value is the result of an operation of type OpTy, return the operation that defines it
 
-    /* 
-     *
-     *  Write your code here.
-     *  if () return failure();
-     *
-     */
+    auto inputOp = value_input.getDefiningOp<TransposeOp>();
+    if (!inputOp) return failure();
 
     // step 3: Otherwise, we have a redundant transpose. Use the rewriter to remove redundancy.
     // Hint: For mlir::PatternRewriter, there is a function you may use to remove redundancy: 
     //       void replaceOp (mlir::Operation *op, mlir::ValueRange newValues)
     //       The first argument will be replaced by the second argument.
 
-    /* 
-     *
-     *  Write your code here.
-     *
-     */
+    rewriter.replaceOp(op, {inputOp.getOperand()});
+
     return success();
   }
 };
