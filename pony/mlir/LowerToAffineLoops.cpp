@@ -125,6 +125,43 @@ struct BinaryOpLowering : public ConversionPattern {
 using AddOpLowering = BinaryOpLowering<pony::AddOp, arith::AddFOp>;
 using MulOpLowering = BinaryOpLowering<pony::MulOp, arith::MulFOp>;
 
+struct GemmOpLowering : public ConversionPattern {
+  GemmOpLowering(MLIRContext *ctx)
+      : ConversionPattern(pony::GemmOp::getOperationName(), 1, ctx) {}
+
+  LogicalResult
+  matchAndRewrite(Operation *op, ArrayRef<Value> operands,
+                  ConversionPatternRewriter &rewriter) const final {
+    auto loc = op->getLoc();
+    auto tensorType = (*op->result_type_begin()).cast<TensorType>();
+
+    // Insert an allocation and deallocation for the result of this operation.
+    auto memRefType = convertTensorToMemRef(tensorType);
+    auto alloc = insertAllocAndDealloc(memRefType, loc, rewriter);
+
+    // Create a nest of affine loops, with one loop per dimension of the shape.
+    // The buildAffineLoopNest function takes a callback that is used to construct
+    // the body of the innermost loop given a builder, a location and a range of
+    // loop induction variables.
+    SmallVector<int64_t, 3> lowerBounds(3, /*Value=*/0);
+    SmallVector<int64_t, 3> steps(3, /*Value=*/1);
+    SmallVector<int64_t, 3> upperBounds(3);
+
+    // TODO: Update upper bounds according to shape
+
+    buildAffineLoopNest(
+        rewriter, loc, lowerBounds, upperBounds, steps,
+        [&](OpBuilder &nestedBuilder, Location loc, ValueRange ivs) {
+          typename pony::GemmOp::Adaptor gemmAdaptor(operands);
+          // TODO: Finish the build of affine loop
+
+        });
+
+    rewriter.replaceOp(op, alloc);
+    return success();
+  }
+};
+
 //===----------------------------------------------------------------------===//
 // PonyToAffine RewritePatterns: Constant operations
 //===----------------------------------------------------------------------===//
@@ -341,7 +378,7 @@ void PonyToAffineLoweringPass::runOnOperation() {
   // the set of patterns that will lower the Pony operations.
   RewritePatternSet patterns(&getContext());
   patterns.add<AddOpLowering, ConstantOpLowering, FuncOpLowering, MulOpLowering,
-               PrintOpLowering, ReturnOpLowering, TransposeOpLowering>(
+               PrintOpLowering, ReturnOpLowering, TransposeOpLowering, GemmOpLowering>(
       &getContext());
 
   // With the target and rewrite patterns defined, we can now attempt the
