@@ -179,7 +179,7 @@ private:
     //        2. 一些有用的函数:  isalpha(); isalnum();
 
       if(isalnum(lastChar)||lastChar=='_'||lastChar=='.'){
-          std::string id_now;
+          std::string id_now = "";
           std::regex id_token("^([a-zA-Z]_{0,1})+[0-9]*$");
           std::string number1 = R"(^(\+|-){0,1}(0|[1-9][0-9]*)(\.[0-9]+){0,1}$)";
           std::regex number_token(number1);
@@ -204,31 +204,31 @@ private:
 
           if(!regex_match(id_now,id_token)&&!regex_match(id_now,number_token)){
              if(check_id_number(id_now) == 1){
-                std::cout<<"Identifier <"<<id_now<<"> ";
-                std::cout<<"begins with digit"<<std::endl;
+                llvm::outs()<<"Identifier <"<<id_now<<"> ";
+                llvm::outs()<<"begins with digit\n";
                 return error_tok_id;
              }
              else if(check_id_number(id_now) == 2){
-                std::cout<<"Identifier <"<<id_now<<"> ";
-                std::cout<<"has digit in the middle"<<std::endl;
+                llvm::outs()<<"Identifier <"<<id_now<<"> ";
+                llvm::outs()<<"has digit in the middle\n";
                 return error_tok_id;
              }
              else if(check_id_number(id_now) == 3){
-                std::cout<<"Identifier <"<<id_now<<"> ";
-                std::cout<<"contains continuous _"<<std::endl;
+                llvm::outs()<<"Identifier <"<<id_now<<"> ";
+                llvm::outs()<<"contains continuous _\n";
                 return error_tok_id;
              }
              else if(check_id_number(id_now) == 5){
-                std::cout<<"Identifier <"<<id_now<<"> ";
-                std::cout<<"begins with _"<<std::endl;
+                llvm::outs()<<"Identifier <"<<id_now<<"> ";
+                llvm::outs()<<"begins with _\n";
                 return error_tok_id;
              }
              else if(check_id_number(id_now) == 4){
-                std::cout<<"Invalid number: <"<<id_now<<">"<<std::endl;
+                llvm::outs()<<"Invalid number: <"<<id_now<<">\n";
                 return error_tok_num;
              }
              else{
-                std::cout<<"Unknown error."<<std::endl;
+                llvm::outs()<<"Unknown error.\n";
              }
              
           }
@@ -266,7 +266,7 @@ private:
 
   /// If the current Token is an identifier, this string contains the value.
   std::string identifierStr;
-  //std::string marks;//增加了这个
+
   /// If the current Token is a number, this contains the value.
   double numVal = 0;
 

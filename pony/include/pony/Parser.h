@@ -213,6 +213,7 @@ private:
         else{
             std::string id_now(lexer.getId());
             id = id_now;
+            //id = "\0";
             lexer.getNextToken();//eat id
         }
     }
@@ -220,6 +221,7 @@ private:
     else if(current_token == tok_identifier || current_token == error_tok_id){// a<2,3> 或者 a
             std::string id_now(lexer.getId());
             id = id_now;
+            //id = "\0";
             lexer.getNextToken();//eat id
             if (lexer.getCurToken() == '<') {
               type = parseType();
@@ -232,20 +234,6 @@ private:
     {
       return parseError<VarDeclExprAST>("identifier or <", "to declare");
     }
-
-    /*if(current_token != tok_identifier && current_token != error_tok_id){
-        return parseError<VarDeclExprAST>("identifier", "to declare a identifier");
-    }
-    std::string id_now(lexer.getId());
-    id = id_now;
-    lexer.getNextToken();//eat id
-
-    
-    if (lexer.getCurToken() == '<') {
-      type = parseType();
-      if (!type)
-        return nullptr;
-    }*/
 
     if (!type)
       type = std::make_unique<VarType>();
@@ -536,8 +524,8 @@ private:
   // TODO 2）: 增加矩阵乘法@的支持，其优先级与矩阵点乘*相同：
   std::unique_ptr<ExprAST> parseBinOpRHS(int exprPrec, std::unique_ptr<ExprAST> lhs) {//一开始传入的参数是0
       //现在lhs为一个表达式中的一项，lexer的指向为一个运算符或者错误的符号，运算符不包含在lhs中
-      int token = getTokPrecedence();
-      if(token < exprPrec) return lhs;//已经没有剩余项了，或者遇到了错误
+      int token_prec = getTokPrecedence();
+      if(token_prec < exprPrec) return lhs;//已经没有剩余项了，或者遇到了错误
 
       auto current_token = lexer.getCurToken();
       lexer.consume(Token(current_token));
@@ -548,23 +536,23 @@ private:
       }
 
       int token_right = getTokPrecedence();
-      if(token<exprPrec) return rhs;
 
-      if(token_right > token){//a+b@c
-          auto tmp_token = lexer.getCurToken();
-          lexer.consume(Token(tmp_token));
-          auto loc_tmp = lexer.getLastLocation();
-          auto rhs1 = parseBinOpRHS(token_right, std::move(rhs));
-          rhs = std::make_unique<BinaryExprAST>(std::move(loc_tmp),token,std::move(rhs),std::move(rhs1));
-          if(!rhs) return nullptr;
-          lhs = std::make_unique<BinaryExprAST>(std::move(loc),token,std::move(lhs),std::move(rhs));
+      if(token_right > token_prec){//a+b*c+d
+          rhs = parseBinOpRHS(token_prec, std::move(rhs));
+          lhs = std::make_unique<BinaryExprAST>(std::move(loc),current_token,std::move(lhs),std::move(rhs));
+          return parseBinOpRHS(exprPrec,std::move(lhs));
       }
-      else{
-          lhs = std::make_unique<BinaryExprAST>(std::move(loc),token,std::move(lhs),std::move(rhs));
+      else{//a*b+c合并a*b
+          lhs = std::make_unique<BinaryExprAST>(std::move(loc),current_token,std::move(lhs),std::move(rhs));
+          return parseBinOpRHS(token_prec,std::move(lhs));
       }
 
+      
   }
   
+
+
+
   /// Helper function to signal errors while parsing, it takes an argument
   /// indicating the expected token and another argument giving more context.
   /// Location is retrieved from the lexer to enrich the error message.
