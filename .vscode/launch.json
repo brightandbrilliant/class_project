@@ -6,7 +6,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/bin/pony",
-            "args": ["${workspaceFolder}/test/test_8.pony", "-emit=jit"],
+            "args": ["${workspaceFolder}/test/test_10.pony", "-emit=jit"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

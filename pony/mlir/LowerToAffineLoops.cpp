@@ -154,12 +154,15 @@ struct GemmOpLowering : public ConversionPattern {
         [&](OpBuilder &nestedBuilder, Location loc, ValueRange ivs) {
           typename pony::GemmOp::Adaptor gemmAdaptor(operands);
           // TODO: Finish the build of affine loop
+          
           auto loadedLhs = nestedBuilder.create<AffineLoadOp>(
               loc, gemmAdaptor.getLhs(), ivs);
           auto loadedRhs = nestedBuilder.create<AffineLoadOp>(
               loc, gemmAdaptor.getRhs(), ivs);
 
           
+          nestedBuilder.create<AffineStoreOp>(loc, loadedLhs, loadedRhs);
+          //return nestedBuilder.create<LoweredBinaryOp>(loc, lhs, rhs);
         });
 
     rewriter.replaceOp(op, alloc);

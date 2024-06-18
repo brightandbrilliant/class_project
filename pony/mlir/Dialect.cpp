@@ -363,9 +363,7 @@ mlir::ParseResult GemmOp::parse(mlir::OpAsmParser &parser,
 void GemmOp::print(mlir::OpAsmPrinter &p) { printBinaryOp(p, *this); }
 
 // TODO: Implement the shape inference
-void GemmOp::inferShapes() {
-    getResult().setType(getOperand(0).getType());
-}
+void GemmOp::inferShapes() {getResult().setType(getOperand(0).getType());}
 
 //===----------------------------------------------------------------------===//
 // ReturnOp
