@@ -53,7 +53,7 @@ struct SimplifyRedundantTranspose : public mlir::OpRewritePattern<TransposeOp> {
     //       void replaceOp (mlir::Operation *op, mlir::ValueRange newValues)
     //       The first argument will be replaced by the second argument.
 
-    rewriter.replaceOp(op, {inputOp.getOperand()});
+    rewriter.replaceOp(op, inputOp.getOperand());
 
     return success();
   }

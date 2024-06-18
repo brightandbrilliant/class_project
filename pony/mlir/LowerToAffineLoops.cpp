@@ -148,21 +148,22 @@ struct GemmOpLowering : public ConversionPattern {
     SmallVector<int64_t, 3> upperBounds(3);
 
     // TODO: Update upper bounds according to shape
-
+    auto lhsShape = operands[0].getType().cast<MemRefType>().getShape();
+    auto rhsShape = operands[1].getType().cast<MemRefType>().getShape();
+    upperBounds = {lhsShape[0], rhsShape[1], lhsShape[1]};
     buildAffineLoopNest(
         rewriter, loc, lowerBounds, upperBounds, steps,
         [&](OpBuilder &nestedBuilder, Location loc, ValueRange ivs) {
           typename pony::GemmOp::Adaptor gemmAdaptor(operands);
           // TODO: Finish the build of affine loop
           
-          auto loadedLhs = nestedBuilder.create<AffineLoadOp>(
-              loc, gemmAdaptor.getLhs(), ivs);
-          auto loadedRhs = nestedBuilder.create<AffineLoadOp>(
-              loc, gemmAdaptor.getRhs(), ivs);
+          auto lhs_ = nestedBuilder.create<AffineLoadOp>(loc, operands[0], ValueRange{ivs[0], ivs[2]});
+          auto rhs_ = nestedBuilder.create<AffineLoadOp>(loc, operands[1], ValueRange{ivs[2], ivs[1]});
+          auto result = nestedBuilder.create<arith::MulFOp>(loc,lhs_,rhs_);
 
-          
-          nestedBuilder.create<AffineStoreOp>(loc, loadedLhs, loadedRhs);
-          //return nestedBuilder.create<LoweredBinaryOp>(loc, lhs, rhs);
+          auto acc = nestedBuilder.create<AffineLoadOp>(loc,alloc,ValueRange{ivs[0],ivs[1]});
+          auto sum = nestedBuilder.create<arith::AddFOp>(loc, acc, result);
+          nestedBuilder.create<AffineStoreOp>(loc, sum, alloc, ValueRange{ivs[0], ivs[1]});
         });
 
     rewriter.replaceOp(op, alloc);

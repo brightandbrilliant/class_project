@@ -363,7 +363,13 @@ mlir::ParseResult GemmOp::parse(mlir::OpAsmParser &parser,
 void GemmOp::print(mlir::OpAsmPrinter &p) { printBinaryOp(p, *this); }
 
 // TODO: Implement the shape inference
-void GemmOp::inferShapes() {getResult().setType(getOperand(0).getType());}
+void GemmOp::inferShapes() 
+{ 
+  auto lhstype = getLhs().getType().dyn_cast<RankedTensorType>();
+  auto rhstype = getRhs().getType().dyn_cast<RankedTensorType>();
+  auto resultType = RankedTensorType::get({lhstype.getShape()[0], rhstype.getShape()[1]}, lhstype.getElementType());
+  return getResult().setType(resultType);
+}
 
 //===----------------------------------------------------------------------===//
 // ReturnOp
